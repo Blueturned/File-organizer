@@ -4,11 +4,37 @@ Add-Type -AssemblyName System.Drawing
 
 #OrderedDictionary which stores the file types and their extensions.
 $fileTypes = [ordered]@{
-    "Video files" = @(".mp4", ".avi", ".mov", ".wmv", ".mkv", ".flv", ".mpeg", ".mpg", ".3gp", ".webm", ".vob", ".mts")
-    "Image files" = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".svg", ".webp", ".heic")
-    "Word documents" = @(".doc", ".docx")
-    "Powerpoint presentations" = @(".ptt", ".pttx", ".pps", ".ppsx")
-    "Excel sheets" = @(".xls", ".xlsx", ".xlsm", ".xlsb")
+    "General Windows files"        = [ordered]@{
+        "Compressed files"         = @(".zip", ".rar", ".7z", ".tar.gz")
+        "Document files"           = @(".pdf", ".txt", ".rtf", ".odt")
+    }
+    "Media files"                  = [ordered]@{
+        "Video files"              = @(".mp4", ".avi", ".mov", ".wmv", ".mkv", ".flv", ".mpeg", ".mpg", ".3gp", ".webm", ".vob", ".mts")
+        "Image files"              = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".svg", ".webp", ".heic")
+        "Audio files"              = @(".mp3", ".wav", ".aiff", "aac", ".ogg", ".flac", ".alac", ".wma", ".pcm")
+    }
+
+    "Installation files"           = [ordered]@{
+        "Executable files"         = @(".exe", ".bat", ".cmd", ".msi", ".com", ".jar", ".pi", ".pl")
+        "System files"             = @(".dll", ".sys", ".ini")
+    }
+
+    "3D models"                    = [ordered]@{
+        "General files"            = @(".obj", ".3ds", ".ply", ".blend")
+        "3D printing files"        = @(".stl", ".amf", ".3mf")
+        "Game development files"   = @(".fbx", ".dae", ".gltf", ".x3d")
+        "CAD files"                = @(".step", ".iges", ".dwg", "dxf")
+        "All 3d files"             = @(".obj", ".3ds", ".ply", ".blend", ".stl", ".amf", ".3mf", ".fbx", ".dae", ".gltf", ".x3d", ".step", ".iges", ".dwg", ".dxf")
+    }
+
+    "Microsoft Office files"       = [ordered]@{
+        "Word documents"           = @(".doc", ".docx")
+        "Powerpoint presentations" = @(".ptt", ".pttx", ".pps", ".ppsx")
+        "Excel sheets"             = @(".xls", ".xlsx", ".xlsm", ".xlsb")
+    }
+    "Imported files"               = [ordered]@{ <# Import file extensions which aren't already implemented
+        "example"                 = @(".exm", ".exam", ".mpl") #>
+    }
 }
 
 #This creates the base GUI.
@@ -28,25 +54,50 @@ $okayButton.Text = "Done"
 
 #This creates the drop down menu, in which you can select the file types.
 $dropDownMenu = New-Object System.Windows.Forms.ComboBox
-$dropDownMenu.Size = New-Object System.Drawing.Size(300, 50)
-$dropDownMenu.Location = New-Object System.Drawing.Point(($form.Size.Width / 2 - $dropDownMenu.Size.Width / 2), 50)
+$dropDownMenu.Size = New-Object System.Drawing.Size(250, 50)
+$dropDownMenu.Location = New-Object System.Drawing.Point(20, 50)
+
 foreach ($fileExtension in $fileTypes.Keys) {
-    $dropDownMenu.Items.Add($fileExtension)
+    [void]$dropDownMenu.Items.Add($fileExtension)
 }
 $form.Controls.Add($dropDownMenu)
 
 #This creates a simple text label on top of the drop down menu.
-$textLabel = New-Object System.Windows.Forms.Label
-$textLabel.Size = New-Object System.Drawing.Size($dropDownMenu.Size)
-$textLabel.Location = New-Object System.Drawing.Point($dropDownMenu.Location.X, ($dropDownMenu.Location.Y - 30))
-$textLabel.Text = "Filter file types:"
-$textLabel.Font = New-Object System.Drawing.Font("Arial", 10)
-$textLabel.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+$textLabelDDM = New-Object System.Windows.Forms.Label
+$textLabelDDM.Size = New-Object System.Drawing.Size($dropDownMenu.Size)
+$textLabelDDM.Location = New-Object System.Drawing.Point($dropDownMenu.Location.X, ($dropDownMenu.Location.Y - 30))
+$textLabelDDM.Text = "Filter file types:"
+$textLabelDDM.Font = New-Object System.Drawing.Font("Arial", 10)
+$textLabelDDM.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+
+#This creates the second drop down menu.
+$selectFileExtensions = New-Object System.Windows.Forms.ComboBox
+$selectFileExtensions.Size = New-Object System.Drawing.Size($dropDownMenu.ClientSize.Width, $dropDownMenu.ClientSize.Height)
+$selectFileExtensions.Location = New-Object System.Drawing.Point(($dropDownMenu.Location.X + $dropDownMenu.Size.Width + 20), $dropDownMenu.Location.Y)
+$form.Controls.Add($selectFileExtensions)
+
+$textLabelSFE = New-Object System.Windows.Forms.Label
+$textLabelSFE.Size = New-Object System.Drawing.Size($selectFileExtensions.Size)
+$textLabelSFE.Location = New-Object System.Drawing.Point($selectFileExtensions.Location.X, ($selectFileExtensions.Location.Y - 30))
+$textLabelSFE.Text = "Filter file extensions:"
+$textLabelSFE.Font = New-Object System.Drawing.Font("Arial", 10)
+$textLabelSFE.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+
+
+#This creates a simple text label on top of the drop down menu.
+$textLabelDDM = New-Object System.Windows.Forms.Label
+$textLabelDDM.Size = New-Object System.Drawing.Size($dropDownMenu.Size)
+$textLabelDDM.Location = New-Object System.Drawing.Point($dropDownMenu.Location.X, ($dropDownMenu.Location.Y - 30))
+$textLabelDDM.Text = "Filter file types:"
+$textLabelDDM.Font = New-Object System.Drawing.Font("Arial", 10)
+$textLabelDDM.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
 
 #This creates the error label, which tells the user what went wrong or if it succeeded.
 $errorLabel = New-Object System.Windows.Forms.Label
 $errorLabel.Size = New-Object System.Drawing.Size(550, 15)
 $errorLabel.Location = New-Object System.Drawing.Point(($form.Size.Width / 2 - $errorLabel.Size.Width / 2), ($okayButton.Location.Y - 20))
+$errorLabel.Text = ""
+$errorLabel.Font = New-Object System.Drawing.Font("Arial", 7)
 $errorLabel.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
 
 #Function to create the file explorer buttons and labels.
@@ -118,62 +169,113 @@ $destinationFolderButton.Add_Click({
     }
 })
 
+function DropDownMenuFunctionality {
+    param (
+        $Object,
+        $Selectedoptions
+    )
+        
+    $selected = $fileTypes[$Selectedoptions]
+    $items = New-Object System.Collections.ArrayList
+    foreach ($item in $Object.Items) {
+        $items.Add($item)
+    }
+
+    if ($Object.Items.Length -ne 0) {
+        foreach ($item in $items) {
+            try {
+                [void]$Object.Items.Remove($item)
+            }
+            catch {
+                Write-Error "Error: $_"
+            }
+        }
+    }
+
+    ForEach ($option in $selected.Keys) {
+        try {
+            [void]$Object.Items.Add($option)
+        }
+        catch {
+            Write-Error "Error: $_"
+        }
+        finally {
+            $form.Controls.Add($Object)
+        }
+    }
+    return $newObject
+}
+
+#Function used for logging errors
+function ErrorLogging {
+    param (
+        [string]$errorMSG,
+        [string]$errorDesc,
+        [string]$state
+    )
+    if ( $errorDesc ) {
+        Write-Error $errorDesc 
+    }
+    if ($state -eq "Error") {
+        $errorLabel.ForeColor = [System.Drawing.Color]::Red
+    }
+    elseif ($state -eq "Success") {
+        $errorLabel.ForeColor = [System.Drawing.Color]::Green
+    }
+    $errorLabel.Text = $errorMSG
+}
+
 #Gives the "Okay button" functionality.
-$okayButton.Add_Click({
-    #The counter to keep track of the amount of files succeeded
+function MoveFilesClick {
+    param (
+    )
     $itemsTransfered = 0
     $itemsFailed = 0
 
-    #This looks checks if the selected item from the drop down menu is the same as the item which is in the ordered dictionary.
-    $filesOption = $dropDownMenu.SelectedItem
-    if ($fileTypes.Contains($filesOption)) {
-        
-        #This gets an array of files which match the file extension defined in the ordered dictionary
-        $extensions = $fileTypes[$filesOption]
+    if ($fromFolder.Text -eq "") { return ErrorLogging -errorMSG "Origin folder cannot remain empty!" -errorDesc "Origin directory cannot remain empty!" -state "Error" }
+    if ($null -eq $selectFileExtensions.SelectedItem) { return ErrorLogging -errorMSG "Please select file extension" -errorDesc "Combobox does not have a selected item" -state "Error" }
+
+    if ($fileTypes.Values.Contains($selectFileExtensions.SelectedItem)) {
+        $selected = $fileTypes[$dropDownMenu.SelectedItem]
+        $extensions = $selected[$selectFileExtensions.SelectedItem]
         $files = Get-ChildItem -Path $fromFolder.Text | Where-Object { $extensions -contains $_.Extension}
-        
-        #Loops trough each of the files.
+
+        if ($destinationFolder.Text -eq "") { return ErrorLogging -errorMSG "Destination directory cannot remain empty!" -errorDesc "Destination directory cannot remain empty!" -state "Error" }
+        if (-Not (Test-Path -Path $destinationFolder.Text -PathType Container)) { return ErrorLogging -errorMSG "'$($destinationFolder.Text)' is an invalid directory!" -errorDesc "'$($destinationFolder.Text)' is an invalid directory!" -state "Error" }
+    
         foreach ($file in $files) {
-            if ($destinationFolder.Text -ne "") {
-                if (Test-Path -Path $destinationFolder.Text -PathType Container) {
-                    try {
-                        #This moves each file to their destination
-                        Move-Item -Path $file.FullName -Destination $destinationFolder.Text -ErrorAction Stop
-                        $itemsTransfered++
-                    }
-                    catch {
-                        #Error handling
-                        Write-Error "Error: $_"
-                        $itemsFailed++
-                    }
-                }
-                else {
-                    #Error handling
-                    Write-Error "'$($destinationFolder.Text)' is an invalid directory!"
-                    $errorLabel.ForeColor = [System.Drawing.Color]::Red
-                    $errorLabel.Text = "'$($destinationFolder.Text)' is an invalid directory!"
-                    break
-                }
+
+            try {
+                Move-Item -Path $file.FullName -Destination $destinationFolder.Text -ErrorAction Stop
+                $itemsTransfered++
             }
-            else {
+            catch {
+                Write-Error "Error: $_"
+                $itemsFailed++
+            }
+            finally {
                 #Error handling
-                Write-Error "Destination directory cannot remain empty!"
-                $errorLabel.ForeColor = [System.Drawing.Color]::Red
-                $errorLabel.Text = "Destination directory cannot remain empty!"
-                break
+                ErrorLogging -errorMSG "Files successfully moved: $itemsTransfered, Files failed: $itemsFailed" -state "Success"
             }
         }
-    #Error handling
-    $errorLabel.ForeColor = [System.Drawing.Color]::Green
-    $errorLabel.Text = "Files succesfully moved: $itemsTransfered, Files failed: $itemsFailed"
-    }
+    } 
+}
 
+#Fires when the selected item of the first dropdown menu changes.
+$dropDownMenu.Add_SelectedIndexChanged({
+    DropDownMenuFunctionality -Object $selectFileExtensions -selectedOptions $dropDownMenu.SelectedItem
+})
+
+#Fires when the okay button has been clicked
+$okayButton.Add_Click({
+    MoveFilesClick
 })
 
 #Adding more controls
 $form.Controls.Add($okayButton)
-$form.Controls.Add($textLabel)
+$form.Controls.Add($textLabelDDM)
 $form.Controls.Add($errorLabel)
+$form.Controls.Add($textLabelSFE)
 
 #Finally so the GUI is actually visible.
 $form.TopMost = $true
